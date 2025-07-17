@@ -1,3 +1,8 @@
+import axios, { AxiosInstance } from 'axios';
+import * as cheerio from 'cheerio';
+import { CookieJar } from 'tough-cookie';
+import { wrapper } from 'axios-cookiejar-support';
+
 export interface Credentials {
   username: string;
   password: string;
@@ -18,11 +23,6 @@ export interface Vehicle {
   batteryLevel?: number;
 }
 
-import axios, { AxiosInstance } from 'axios';
-import * as cheerio from 'cheerio';
-import { CookieJar } from 'tough-cookie';
-import { wrapper } from 'axios-cookiejar-support';
-
 export class WeConnectApi {
   private client: AxiosInstance;
   private token?: TokenResponse;
@@ -38,7 +38,7 @@ export class WeConnectApi {
     while (true) {
       const res = await this.client.get(next, {
         maxRedirects: 0,
-        validateStatus: s => s >= 200 && s < 400,
+        validateStatus: (s) => s >= 200 && s < 400,
       });
       if (res.status === 302 || res.status === 303) {
         if (!res.headers.location) throw new Error('Missing redirect');
@@ -55,7 +55,7 @@ export class WeConnectApi {
   async login(creds: Credentials): Promise<void> {
     const nonce = Math.random().toString(16).slice(2);
     const authorizeUrl = `https://emea.bff.cariad.digital/user-login/v1/authorize?redirect_uri=weconnect://authenticated&nonce=${nonce}`;
-    const first = await this.client.get(authorizeUrl, { maxRedirects: 0, validateStatus: s => s >= 300 && s < 400 });
+    const first = await this.client.get(authorizeUrl, { maxRedirects: 0, validateStatus: (s) => s >= 300 && s < 400 });
     const loginUrl = first.headers.location as string;
     if (!loginUrl) throw new Error('Failed to get login url');
 
@@ -69,7 +69,9 @@ export class WeConnectApi {
     if (!formAction || !csrf || !relayState || !hmac) throw new Error('Login form parse error');
 
     const emailFormUrl = new URL(formAction, 'https://identity.vwgroup.io').toString();
-    const emailPayload = new URLSearchParams({ _csrf: csrf, relayState, hmac, email: creds.username });
+    const emailPayload = new URLSearchParams({
+      _csrf: csrf, relayState, hmac, email: creds.username,
+    });
     const passPage = await this.client.post(emailFormUrl, emailPayload.toString(), {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
     });
@@ -81,12 +83,14 @@ export class WeConnectApi {
     const passCsrf = $pass('input[name="_csrf"]').attr('value');
     if (!passAction || !passRelay || !passHmac || !passCsrf) throw new Error('Password form parse error');
     const passUrl = `https://identity.vwgroup.io/signin-service/v1/a24fba63-34b3-4d43-b181-942111e6bda8@apps_vw-dilab_com/${passAction}`;
-    const passPayload = new URLSearchParams({ relayState: passRelay, hmac: passHmac, _csrf: passCsrf, password: creds.password });
+    const passPayload = new URLSearchParams({
+      relayState: passRelay, hmac: passHmac, _csrf: passCsrf, password: creds.password,
+    });
 
     const loginRes = await this.client.post(passUrl, passPayload.toString(), {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       maxRedirects: 0,
-      validateStatus: s => s >= 300 && s < 400,
+      validateStatus: (s) => s >= 300 && s < 400,
     });
     let redirect = loginRes.headers.location as string;
     if (!redirect) throw new Error('No redirect after login');
@@ -115,7 +119,7 @@ export class WeConnectApi {
     };
 
     const tokenRes = await this.client.post('https://emea.bff.cariad.digital/user-login/login/v1', body, {
-      headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+      headers: { accept: 'application/json', 'content-type': 'application/json' },
     });
     if (tokenRes.status !== 200) throw new Error('Token fetch failed');
     this.token = tokenRes.data as TokenResponse;
@@ -136,7 +140,7 @@ export class WeConnectApi {
       headers: { Authorization: `Bearer ${this.token.access_token}` },
     });
     if (res.status !== 200) throw new Error('Failed to fetch vehicles');
-    return (res.data.data as any[]).map(v => ({
+    return (res.data.data as any[]).map((v) => ({
       vin: v.vin,
       modelName: v.model,
       nickname: v.nickname,

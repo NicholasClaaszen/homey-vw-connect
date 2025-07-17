@@ -1,4 +1,5 @@
 'use strict';
+
 import { Device } from 'homey';
 import { WeConnectClient } from '../../weconnectClient';
 

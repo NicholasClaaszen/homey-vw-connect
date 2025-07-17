@@ -2,11 +2,14 @@ import { EventEmitter } from 'events';
 import { WeConnectApi, Credentials, Vehicle } from './weconnectApi';
 
 class Log {
-  error(...args: any[]): void { console.error(...args); }
-  log(...args: any[]): void { console.log(...args); }
+  error(...args: any[]): void {
+    console.error(...args);
+  }
+
+  log(...args: any[]): void {
+    console.log(...args);
+  }
 }
-
-
 
 export class WeConnectClient {
   private log = new Log();
@@ -35,9 +38,9 @@ export class WeConnectClient {
       this.log.error('Cannot start polling: not logged in');
       return;
     }
-    this.pollOnce().catch(err => this.log.error('Polling error', err));
+    this.pollOnce().catch((err) => this.log.error('Polling error', err));
     setInterval(() => {
-      this.pollOnce().catch(err => this.log.error('Polling error', err));
+      this.pollOnce().catch((err) => this.log.error('Polling error', err));
     }, intervalMs);
   }
 
