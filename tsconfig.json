@@ -1,0 +1,13 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "outDir": ".homeybuild/"
+  },
+  "include": [
+    "app.ts",
+    "drivers/**/*.ts",
+    "weconnectClient.ts",
+    "types/**/*.d.ts"
+  ]
+}

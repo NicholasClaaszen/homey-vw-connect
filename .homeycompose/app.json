@@ -1,0 +1,29 @@
+{
+  "id": "com.ihomer.vwweconnect",
+  "version": "1.0.0",
+  "compatibility": ">=12.4.0",
+  "sdk": 3,
+  "platforms": [
+    "local",
+    "cloud"
+  ],
+  "name": {
+    "en": "Volkswagen WeConnect"
+  },
+  "description": {
+    "en": "Adds support for reading vehicle data via Volkswagen's WeConnect network. Requires a WeConnect subscription."
+  },
+  "category": [
+    "appliances"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Nicholas Claaszen",
+    "email": "nicholas@claaszen.nl"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "vehicle",
+  "name": {
+    "en": "Volkswagen Vehicle"
+  },
+  "class": "other",
+  "capabilities": [
+    "measure_battery"
+  ],
+  "images": {
+    "large": "/drivers/vehicle/assets/icon.svg"
+  },
+  "settings": [
+    {
+      "id": "target_soc",
+      "type": "number",
+      "label": { "en": "Target state of charge (%)" },
+      "value": 80
+    }
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "id": "soc_changed",
+        "title": { "en": "State of charge changed" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
+          { "name": "value", "type": "number", "title": { "en": "State of charge (%)" } }
+        ]
+      },
+      {
+        "id": "soc_reached",
+        "title": { "en": "State of charge reached" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
+          { "name": "level", "type": "number", "title": { "en": "Target SoC (%)" } }
+        ]
+      }
+    ]
+  },
+  "pair": [
+    {
+      "id": "login",
+      "template": "/drivers/vehicle/pair/login.html",
+      "navigation": { "next": "list_devices" }
+    },
+    {
+      "id": "list_devices",
+      "template": "/drivers/vehicle/pair/list_devices.html"
+    }
+  ]
+}

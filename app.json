@@ -1,0 +1,135 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.ihomer.vwweconnect",
+  "version": "1.0.0",
+  "compatibility": ">=12.4.0",
+  "sdk": 3,
+  "platforms": [
+    "local",
+    "cloud"
+  ],
+  "name": {
+    "en": "Volkswagen WeConnect"
+  },
+  "description": {
+    "en": "Adds support for reading vehicle data via Volkswagen's WeConnect network. Requires a WeConnect subscription."
+  },
+  "category": [
+    "appliances"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Nicholas Claaszen",
+    "email": "nicholas@claaszen.nl"
+  },
+  "drivers": [
+    {
+      "id": "vehicle",
+      "name": {
+        "en": "Volkswagen Vehicle"
+      },
+      "class": "other",
+      "capabilities": [
+        "measure_battery"
+      ],
+      "images": {
+        "large": "/drivers/vehicle/assets/icon.svg",
+        "small": "/drivers/vehicle/assets/icon.svg"
+      },
+      "settings": [
+        {
+          "id": "target_soc",
+          "type": "number",
+          "label": {
+            "en": "Target state of charge (%)"
+          },
+          "value": 80
+        }
+      ],
+      "flow": {
+        "triggers": [
+          {
+            "id": "soc_changed",
+            "title": {
+              "en": "State of charge changed"
+            },
+            "args": [
+              {
+                "name": "device",
+                "type": "device",
+                "filter": "driver_id=vehicle"
+              },
+              {
+                "name": "value",
+                "type": "number",
+                "title": {
+                  "en": "State of charge (%)"
+                }
+              }
+            ]
+          },
+          {
+            "id": "soc_reached",
+            "title": {
+              "en": "State of charge reached"
+            },
+            "args": [
+              {
+                "name": "device",
+                "type": "device",
+                "filter": "driver_id=vehicle"
+              },
+              {
+                "name": "level",
+                "type": "number",
+                "title": {
+                  "en": "Target SoC (%)"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "pair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "logo": "logo.png",
+            "title": {
+              "en": "Your custom title"
+            },
+            "usernameLabel": {
+              "en": "E-mail address"
+            },
+            "usernamePlaceholder": {
+              "en": "john@doe.com"
+            },
+            "passwordLabel": {
+              "en": "Password"
+            },
+            "passwordPlaceholder": {
+              "en": "Password"
+            }
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ]
+    }
+  ]
+}

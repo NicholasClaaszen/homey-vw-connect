@@ -1,0 +1,67 @@
+{
+  "id": "vehicle",
+  "name": {
+    "en": "Volkswagen Vehicle"
+  },
+  "class": "other",
+  "capabilities": [
+    "measure_battery"
+  ],
+  "images": {
+    "large": "/drivers/vehicle/assets/icon.svg",
+    "small": "/drivers/vehicle/assets/icon.svg"
+  },
+  "settings": [
+    {
+      "id": "target_soc",
+      "type": "number",
+      "label": { "en": "Target state of charge (%)" },
+      "value": 80
+    }
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "id": "soc_changed",
+        "title": { "en": "State of charge changed" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
+          { "name": "value", "type": "number", "title": { "en": "State of charge (%)" } }
+        ]
+      },
+      {
+        "id": "soc_reached",
+        "title": { "en": "State of charge reached" },
+        "args": [
+          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
+          { "name": "level", "type": "number", "title": { "en": "Target SoC (%)" } }
+        ]
+      }
+    ]
+  },
+  "pair": [
+    {
+      "id": "login_credentials",
+      "template": "login_credentials",
+      "options": {
+        "logo": "logo.png",
+        "title": {
+          "en": "Your custom title"
+        },
+        "usernameLabel": { "en": "E-mail address" },
+        "usernamePlaceholder": { "en": "john@doe.com" },
+        "passwordLabel": { "en": "Password" },
+        "passwordPlaceholder": { "en": "Password" }
+      }
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": { "next": "add_devices" }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}

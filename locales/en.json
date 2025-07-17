@@ -1,0 +1,10 @@
+{
+  "driver.vehicle.name": "Volkswagen Vehicle",
+  "driver.vehicle.settings.target_soc": "Target state of charge (%)",
+  "driver.vehicle.triggers.soc_changed": "State of charge changed",
+  "driver.vehicle.triggers.soc_reached": "State of charge reached",
+  "pair.login.title": "Connect to WeConnect",
+  "pair.login.instructions": "Enter your WeConnect credentials",
+  "pair.login.button": "Login",
+  "pair.list_devices.title": "Select your vehicle"
+}
