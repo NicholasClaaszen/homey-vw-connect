@@ -1,28 +1,36 @@
-import { VwWeConnect, Log, idStatusEmitter } from 'npm-vwconnectidapi';
+import { EventEmitter } from 'events';
+import { WeConnectApi, Credentials, Vehicle } from './weconnectApi';
 
-export interface Credentials {
-  username: string;
-  password: string;
+class Log {
+  error(...args: any[]): void {
+    console.error(...args);
+  }
+
+  log(...args: any[]): void {
+    console.log(...args);
+  }
 }
 
 export class WeConnectClient {
   private log = new Log();
-  private conn = new VwWeConnect();
+  private api = new WeConnectApi();
   private loggedIn = false;
+  private emitter = new EventEmitter();
 
   async login(creds: Credentials): Promise<void> {
-    this.conn.setLogLevel('ERROR');
-    this.conn.setCredentials(creds.username, creds.password);
-    await this.conn.getData();
+    await this.api.login(creds);
     this.loggedIn = true;
+    await this.pollOnce();
   }
 
   get vehicles() {
-    return this.conn.vehicles?.data || [];
+    return this.cachedVehicles;
   }
 
+  private cachedVehicles: Vehicle[] = [];
+
   setActiveVin(vin: string): void {
-    this.conn.setActiveVin(vin);
+    // not needed in new api
   }
 
   startPolling(intervalMs = 60000): void {
@@ -30,17 +38,22 @@ export class WeConnectClient {
       this.log.error('Cannot start polling: not logged in');
       return;
     }
-
-    // initial fetch
-    this.conn.getData().catch((err: any) => this.log.error('Polling error', err));
-
-    // repeat
+    this.pollOnce().catch((err) => this.log.error('Polling error', err));
     setInterval(() => {
-      this.conn.getData().catch((err: any) => this.log.error('Polling error', err));
+      this.pollOnce().catch((err) => this.log.error('Polling error', err));
     }, intervalMs);
   }
 
   on(event: string, handler: (...args: any[]) => void): void {
-    idStatusEmitter.on(event, handler);
+    this.emitter.on(event, handler);
+  }
+
+  private async pollOnce(): Promise<void> {
+    const vehicles = await this.api.getVehicles();
+    this.cachedVehicles = vehicles;
+    const active = vehicles[0];
+    if (active && active.batteryLevel !== undefined) {
+      this.emitter.emit('currentSOC', active.batteryLevel);
+    }
   }
 }

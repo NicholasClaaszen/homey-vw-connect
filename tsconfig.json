@@ -8,6 +8,7 @@
     "app.ts",
     "drivers/**/*.ts",
     "weconnectClient.ts",
+    "weconnectApi.ts",
     "types/**/*.d.ts"
   ]
 }

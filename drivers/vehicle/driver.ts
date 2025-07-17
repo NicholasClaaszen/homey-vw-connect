@@ -1,7 +1,8 @@
 'use strict';
+
 import { Driver } from 'homey';
 import { PairSession } from 'homey/lib/Driver';
-import { Credentials } from '../../weconnectClient';
+import { Credentials } from '../../weconnectApi';
 
 module.exports = class VehicleDriver extends Driver {
   async onInit(): Promise<void> {
@@ -15,7 +16,7 @@ module.exports = class VehicleDriver extends Driver {
     });
 
     session.setHandler('list_devices', async () => {
-      const vehicles = (this.homey.app as any).weconnect.vehicles;
+      const { vehicles } = (this.homey.app as any).weconnect;
       return vehicles.map((v: any) => ({ name: v.nickname || v.modelName || v.vin, data: { id: v.vin } }));
     });
   }
