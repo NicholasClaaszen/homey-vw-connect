@@ -1,7 +1,7 @@
 'use strict';
 import { Driver } from 'homey';
 import { PairSession } from 'homey/lib/Driver';
-import { Credentials } from '../../weconnectClient';
+import { Credentials } from '../../weconnectApi';
 
 module.exports = class VehicleDriver extends Driver {
   async onInit(): Promise<void> {
