@@ -32,8 +32,9 @@
     "electricCar": true
   },
   "images": {
-    "large": "/assets/electric_car.svg",
-    "small": "/assets/electric_car.svg"
+    "small": "/drivers/vehicle/assets/driver-small.jpg",
+    "large": "/drivers/vehicle/assets/driver-large.jpg",
+    "xlarge": "/drivers/vehicle/assets/driver-xlarge.jpg"
   },
   "settings": [],
   "pair": [
@@ -41,9 +42,9 @@
       "id": "login_credentials",
       "template": "login_credentials",
       "options": {
-        "logo": "icon.svg",
+        "logo": "/drivers/vehicle/assets/weConnect.png",
         "title": {
-          "en": "Your custom title"
+          "en": "Volkswagen WeConnect login"
         },
         "usernameLabel": { "en": "E-mail address" },
         "usernamePlaceholder": { "en": "john@doe.com" },

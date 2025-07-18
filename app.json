@@ -8,24 +8,30 @@
     "local"
   ],
   "name": {
-    "en": "Volkswagen WeConnect"
+    "en": "Volkswagen WeConnect (Europe)"
   },
   "description": {
     "en": "Adds support for reading vehicle data via Volkswagen's WeConnect network. Requires a WeConnect subscription."
   },
+  "brandColor": "#6091c3",
   "category": [
     "energy"
   ],
   "permissions": [],
   "images": {
-    "small": "/assets/vw_logo.svg",
-    "large": "/assets/vw_logo.svg",
-    "xlarge": "/assets/vw_logo.svg"
+    "small": "/assets/images/app_small.jpg",
+    "large": "/assets/images/app_large.jpg",
+    "xlarge": "/assets/images/app_xlarge.jpg"
   },
   "author": {
     "name": "Nicholas Claaszen",
     "email": "nicholas@claaszen.nl"
   },
+  "bugs": {
+    "url": "https://github.com/NicholasClaaszen/homey-vw-connect/issues"
+  },
+  "source": "https://github.com/NicholasClaaszen/homey-vw-connect",
+  "icon": "/assets/icon.svg",
   "flow": {
     "triggers": [
       {
@@ -172,37 +178,30 @@
         ]
       },
       {
-        "id": "activate_window_heating",
+        "id": "start_charging",
         "title": {
-          "en": "Activate window heating"
+          "en": "Start charging"
         },
-        "titleFormat": "{device} activate window heating for zone {zone}",
+        "titleFormat": "{device} start charging",
         "args": [
           {
             "type": "device",
             "name": "device",
             "filter": "driver_id=vehicle"
-          },
+          }
+        ]
+      },
+      {
+        "id": "stop_charging",
+        "title": {
+          "en": "Stop charging"
+        },
+        "titleFormat": "{device} stop charging",
+        "args": [
           {
-            "name": "zone",
-            "type": "dropdown",
-            "title": {
-              "en": "Zone"
-            },
-            "values": [
-              {
-                "id": "front",
-                "title": {
-                  "en": "Front"
-                }
-              },
-              {
-                "id": "rear",
-                "title": {
-                  "en": "Rear"
-                }
-              }
-            ]
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
           }
         ]
       }
@@ -247,8 +246,9 @@
         "electricCar": true
       },
       "images": {
-        "large": "/assets/electric_car.svg",
-        "small": "/assets/electric_car.svg"
+        "small": "/drivers/vehicle/assets/driver-small.jpg",
+        "large": "/drivers/vehicle/assets/driver-large.jpg",
+        "xlarge": "/drivers/vehicle/assets/driver-xlarge.jpg"
       },
       "settings": [],
       "pair": [
@@ -256,9 +256,9 @@
           "id": "login_credentials",
           "template": "login_credentials",
           "options": {
-            "logo": "icon.svg",
+            "logo": "/drivers/vehicle/assets/weConnect.png",
             "title": {
-              "en": "Your custom title"
+              "en": "Volkswagen WeConnect login"
             },
             "usernameLabel": {
               "en": "E-mail address"
@@ -447,8 +447,8 @@
         "en": "Front window heating"
       },
       "getable": true,
-      "setable": true,
-      "uiComponent": "toggle",
+      "setable": false,
+      "uiComponent": "sensor",
       "icon": "/assets/ev_window_heating.svg"
     }
   }

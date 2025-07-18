@@ -1,7 +1,6 @@
-import { EventEmitter } from 'events';
 import { WeConnectApi, Credentials, Vehicle } from './weconnectApi';
 
-export class WeConnectClient {
+class WeConnectClient {
   private api = new WeConnectApi();
   private credentials?: Credentials;
   private cachedVehicles: Vehicle[] = [];
@@ -14,7 +13,7 @@ export class WeConnectClient {
     try {
       await this.api.login(this.credentials!);
     } catch (error) {
-      throw new Error(`Login failed: check your credentials.`);
+      throw new Error('Login failed: check your credentials.');
     }
     await this.pollOnce();
   }
@@ -42,10 +41,52 @@ export class WeConnectClient {
       throw new Error(`Vehicle with VIN ${vin} not found.`);
     }
 
-    this.cachedVehicles = this.cachedVehicles.map(v =>
-      v.vin === vin ? { ...v, batteryLevel: vehicle.batteryLevel } : v
-    );
+    this.cachedVehicles = this.cachedVehicles.map((v) => (v.vin === vin ? { ...v, batteryLevel: vehicle.batteryLevel } : v));
 
     return vehicle;
   }
+
+  public async actionClimate(vin: string, enable: boolean, temperature: number) : Promise<void> {
+    const tokenCheck = await this.api.checkTokenValidity();
+    if (!tokenCheck) {
+      await this.login();
+    }
+
+    const vehicle = await this.getVehicle(vin);
+    if (!vehicle) {
+      throw new Error(`Vehicle with VIN ${vin} not found.`);
+    }
+
+    await this.api.toggleClimate(vin, enable, temperature);
+  }
+
+  public async actionTargetSOC(vin: string, targetSOC: number): Promise<void> {
+    const tokenCheck = await this.api.checkTokenValidity();
+    if (!tokenCheck) {
+      await this.login();
+    }
+
+    const vehicle = await this.getVehicle(vin);
+    if (!vehicle) {
+      throw new Error(`Vehicle with VIN ${vin} not found.`);
+    }
+
+    await this.api.setTargetSOC(vin, targetSOC);
+  }
+
+  public async actionToggleCharging(vin: string, enable: boolean): Promise<void> {
+    const tokenCheck = await this.api.checkTokenValidity();
+    if (!tokenCheck) {
+      await this.login();
+    }
+
+    const vehicle = await this.getVehicle(vin);
+    if (!vehicle) {
+      throw new Error(`Vehicle with VIN ${vin} not found.`);
+    }
+
+    await this.api.toggleCharging(vin, enable);
+  }
 }
+
+export default WeConnectClient;

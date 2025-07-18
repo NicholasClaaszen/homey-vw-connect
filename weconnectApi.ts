@@ -3,7 +3,6 @@ import * as cheerio from 'cheerio';
 import { CookieJar } from 'tough-cookie';
 import { wrapper } from 'axios-cookiejar-support';
 import vm from 'vm';
-import { json } from 'node:stream/consumers'
 
 export interface Credentials {
   username: string;
@@ -44,7 +43,7 @@ export class WeConnectApi {
       return false;
     }
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-    const exp = payload.exp;
+    const { exp } = payload;
     if (!exp) {
       return false;
     }
@@ -53,22 +52,25 @@ export class WeConnectApi {
   }
 
   private async followRedirect(url: string): Promise<string> {
-    let next = url;
-    while (true) {
+    let next: string = url;
+    for (let hops: number = 0; hops <= 100; hops++) {
       const res = await this.client.get(next, {
         maxRedirects: 0,
-        validateStatus: (s) => s >= 200 && s < 400,
+        validateStatus: (s: number) => s >= 200 && s < 400,
       });
       if (res.status === 302 || res.status === 303) {
-        if (!res.headers.location) throw new Error('Missing redirect');
-        next = res.headers.location as string;
-        if (next.startsWith('weconnect://')) {
-          return next;
-        }
+        const loc: string | undefined = res.headers.location;
+        if (!loc) throw new Error('Missing redirect');
+        const r: string = (loc.startsWith('http://') || loc.startsWith('https://') || loc.startsWith('weconnect://'))
+          ? loc
+          : new URL(loc, new URL(next)).toString();
+        if (r.startsWith('weconnect://')) return r;
+        next = r;
         continue;
       }
-      return res.request.res.responseUrl || next;
+      return (res.request?.res?.responseUrl as string) || next;
     }
+    throw new Error('Too many redirects');
   }
 
   async login(creds: Credentials): Promise<void> {
@@ -88,7 +90,7 @@ export class WeConnectApi {
     const hmac = $login('input[name="hmac"]').attr('value');
 
     if (!formAction || !csrf || !relayState || !hmac) {
-      //log for debugging purposes
+      // log for debugging purposes
       throw new Error('Login form parse error');
     }
 
@@ -104,22 +106,20 @@ export class WeConnectApi {
     const scriptContent = $pass('script')
       .map((i, el) => $pass(el).html())
       .get()
-      .find(text => text?.includes('window._IDK'));
+      .find((text) => text?.includes('window._IDK'));
 
     if (!scriptContent) throw new Error('window._IDK script not found');
 
-
-
-    const context: any = { window:{} };
+    const context: any = { window: {} };
     vm.createContext(context); // create sandbox
     vm.runInContext(scriptContent, context);
 
     const idkData = context.window?._IDK || context._IDK;
 
     const passAction = 'login/authenticate';
-    const passRelay = idkData.templateModel.relayState || ''
-    const passHmac = idkData.templateModel.hmac || ''
-    const passCsrf = idkData.csrf_token || ''
+    const passRelay = idkData.templateModel.relayState || '';
+    const passHmac = idkData.templateModel.hmac || '';
+    const passCsrf = idkData.csrf_token || '';
 
     if (!passAction || !passRelay || !passHmac || !passCsrf) throw new Error('Password form parse error');
     const passUrl = `https://identity.vwgroup.io/signin-service/v1/a24fba63-34b3-4d43-b181-942111e6bda8@apps_vw-dilab_com/${passAction}`;
@@ -187,13 +187,16 @@ export class WeConnectApi {
 
   async getVehicle(vin: string): Promise<any> {
     if (!this.token?.access_token) throw new Error('Not logged in');
-    const res = await this.client.get(`https://emea.bff.cariad.digital/vehicle/v1/vehicles/${vin}/selectivestatus?jobs=access,activeventilation,automation,auxiliaryheating,userCapabilities,charging,chargingProfiles,batteryChargingCare,climatisation,climatisationTimers,departureTimers,fuelStatus,vehicleLights,lvBattery,readiness,vehicleHealthInspection,vehicleHealthWarnings,oilLevel,measurements,batterySupport,trips`, {
+    const res = await this.client.get(`https://emea.bff.cariad.digital/vehicle/v1/vehicles/${vin}`
+        + '/selectivestatus?jobs=access,activeventilation,automation,auxiliaryheating,userCapabilities,charging,'
+        + 'chargingProfiles,batteryChargingCare,climatisation,climatisationTimers,departureTimers,fuelStatus,vehicleLights,'
+        + 'lvBattery,readiness,vehicleHealthInspection,vehicleHealthWarnings,oilLevel,measurements,batterySupport,trips', {
       headers: { Authorization: `Bearer ${this.token.access_token}` },
     });
     if (res.status !== 207) throw new Error('Failed to fetch vehicle');
     const v = res.data;
     const result = {
-      vin: vin,
+      vin,
       batteryLevel: v.measurements.fuelLevelStatus?.value?.currentSOC_pct || 0,
       charging: {
         lastUpdate: v.charging?.chargingStatus?.value?.carCapturedTimestamp,
@@ -208,9 +211,9 @@ export class WeConnectApi {
         remainingTime: v.climatisation?.climatisationStatus?.value?.remainingClimatisationTime_min,
         climateState: v.climatisation?.climatisationStatus?.value?.climatisationState,
         windowHeatingState: {
-          front: "off",
-          rear: "off",
-        }
+          front: 'off',
+          rear: 'off',
+        },
       },
       stats: {
         odometer: v.measurements.odometerStatus?.value?.odometer || 0,
@@ -219,14 +222,42 @@ export class WeConnectApi {
           max: v.measurements.temperatureBatteryStatus?.value?.temperatureHvBatteryMax_K || 0,
         },
         nextInspection: v.vehicleHealthInspection?.maintenanceStatus?.value?.inspectionDue_days || 999,
-      }
+      },
     };
 
     v.climatisation?.windowHeatingStatus?.value?.windowHeatingStatus?.forEach((w: { windowLocation: 'front' | 'rear'; windowHeatingState: string }) => {
       result.climate.windowHeatingState[w.windowLocation] = w.windowHeatingState;
     });
-
-
     return result;
+  }
+
+  async toggleClimate(vin: string, enable: boolean, temperature: number): Promise<void> {
+    if (!this.token?.access_token) throw new Error('Not logged in');
+    const action = enable ? 'start' : 'stop';
+    await this.client.post(`https://emea.bff.cariad.digital/vehicle/v1/vehicles/${vin}/climatisation/${action}`, {
+      targetTemperature_C: parseFloat(temperature.toFixed(1)),
+      targetTemperature_F: parseFloat(((temperature * 9) / 5 + 32).toFixed(1)),
+      targetTemperature_K: parseFloat((temperature + 273.15).toFixed(2)),
+    }, {
+      headers: { Authorization: `Bearer ${this.token.access_token}` },
+    });
+  }
+
+  async setTargetSOC(vin: string, target: number): Promise<void> {
+    if (!this.token?.access_token) throw new Error('Not logged in');
+
+    await this.client.put(`https://emea.bff.cariad.digital/vehicle/v1/vehicles/${vin}/charging/settings`, {
+      targetSOC_pct: target,
+    }, {
+      headers: { Authorization: `Bearer ${this.token.access_token}` },
+    });
+  }
+
+  async toggleCharging(vin: string, enable: boolean): Promise<void> {
+    if (!this.token?.access_token) throw new Error('Not logged in');
+    const action = enable ? 'start' : 'stop';
+    await this.client.post(`https://emea.bff.cariad.digital/vehicle/v1/vehicles/${vin}/charging/${action}`, {}, {
+      headers: { Authorization: `Bearer ${this.token.access_token}` },
+    });
   }
 }

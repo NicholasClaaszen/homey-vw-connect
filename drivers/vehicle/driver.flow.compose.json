@@ -61,20 +61,14 @@
       "titleFormat": "{device} deactivate climate control"
     },
     {
-      "id": "activate_window_heating",
-      "title": { "en": "Activate window heating" },
-      "titleFormat": "{device} activate window heating for zone {zone}",
-      "args": [
-        {
-          "name": "zone",
-          "type": "dropdown",
-          "title": { "en": "Zone" },
-          "values": [
-            { "id": "front", "title": { "en": "Front" } },
-            { "id": "rear", "title": { "en": "Rear" } }
-          ]
-        }
-      ]
+      "id": "start_charging",
+      "title": { "en": "Start charging" },
+      "titleFormat": "{device} start charging"
+    },
+    {
+      "id": "stop_charging",
+      "title": { "en": "Stop charging" },
+      "titleFormat": "{device} stop charging"
     }
   ]
 }

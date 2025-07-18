@@ -7,22 +7,28 @@
     "local"
   ],
   "name": {
-    "en": "Volkswagen WeConnect"
+    "en": "Volkswagen WeConnect (Europe)"
   },
   "description": {
     "en": "Adds support for reading vehicle data via Volkswagen's WeConnect network. Requires a WeConnect subscription."
   },
+  "brandColor": "#6091c3",
   "category": [
     "energy"
   ],
   "permissions": [],
   "images": {
-    "small": "/assets/vw_logo.svg",
-    "large": "/assets/vw_logo.svg",
-    "xlarge": "/assets/vw_logo.svg"
+    "small": "/assets/images/app_small.jpg",
+    "large": "/assets/images/app_large.jpg",
+    "xlarge": "/assets/images/app_xlarge.jpg"
   },
   "author": {
     "name": "Nicholas Claaszen",
     "email": "nicholas@claaszen.nl"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/NicholasClaaszen/homey-vw-connect/issues"
+  },
+  "source": "https://github.com/NicholasClaaszen/homey-vw-connect",
+  "icon": "/assets/icon.svg"
 }

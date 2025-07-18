@@ -7,5 +7,12 @@
     "import/resolver": {
       "typescript": {}
     }
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "camelcase": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "node/no-missing-import": "off"
   }
 }

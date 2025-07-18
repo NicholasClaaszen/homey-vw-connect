@@ -1,7 +1,7 @@
 'use strict';
 
 import Homey from 'homey';
-import { WeConnectClient } from './weconnectClient';
+import WeConnectClient from './weconnectClient';
 
 module.exports = class MyApp extends Homey.App {
   public weconnect: WeConnectClient = new WeConnectClient();

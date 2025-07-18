@@ -1,9 +1,8 @@
 'use strict';
 
 import { Device } from 'homey';
-import { WeConnectClient } from '../../weconnectClient';
-import { EventEmitter } from 'events'
-
+import { EventEmitter } from 'events';
+import WeConnectClient from '../../weconnectClient';
 
 const mapChargingState = (state: string): string | null => {
   const cleanedState = state.toLowerCase().trim();
@@ -34,7 +33,6 @@ const mapChargingState = (state: string): string | null => {
   }
 };
 
-
 module.exports = class VehicleDevice extends Device {
   private soc = 0;
   private client: WeConnectClient | undefined;
@@ -50,20 +48,77 @@ module.exports = class VehicleDevice extends Device {
 
     await this.pollVehicleState(false);
     this.lastSoC = await this.getCapabilityValue('measure_battery');
-    if(this.lastSoC < parseFloat(await this.getCapabilityValue('ev_target_battery_level'))) {
+    this.chargeTimeRemaining = await this.getCapabilityValue('ev_charging_time_remaining') || 0;
+    if (this.lastSoC < parseFloat(await this.getCapabilityValue('ev_target_battery_level'))) {
       this.sentTargetReachedTrigger = false;
     }
-    this.chargeTimeRemaining = await this.getCapabilityValue('ev_charging_time_remaining') || 0;
 
-    this.poller = setInterval(this.pollVehicleState, 30000, true);
+    /* Capability Listeners */
+    this.registerCapabilityListener('target_temperature', async (value) => {
+      const climateState = await this.getCapabilityValue('ev_climate_active');
+      await this.actionClimate(climateState, value);
+    });
+    this.registerCapabilityListener('ev_climate_active', async (value) => {
+      const temp = await this.getCapabilityValue('target_temperature');
+      await this.actionClimate(value, temp);
+    });
+    this.registerCapabilityListener('ev_target_battery_level', async (value) => {
+      await this.actionTargetSOC(value);
+    });
+
+    /* Action Cards */
+    this.homey.flow.getActionCard('activate_climate').registerRunListener(async (args, state) => {
+      const temp = await this.getCapabilityValue('target_temperature');
+      await this.actionClimate(true, temp);
+    });
+    this.homey.flow.getActionCard('deactivate_climate').registerRunListener(async (args, state) => {
+      const temp = await this.getCapabilityValue('target_temperature');
+      await this.actionClimate(false, temp);
+    });
+    this.homey.flow.getActionCard('set_target_soc').registerRunListener(async (args, state) => {
+      await this.actionTargetSOC(args.level);
+    });
+    this.homey.flow.getActionCard('start_charging').registerRunListener(async (args, state) => {
+      await this.actionToggleCharging(true);
+    });
+    this.homey.flow.getActionCard('stop_charging').registerRunListener(async (args, state) => {
+      await this.actionToggleCharging(false);
+    });
+
+    this.poller = this.homey.setInterval(this.pollVehicleState, 30000, true);
   }
 
   async onUninit(): Promise<void> {
     this.log('Vehicle device uninitialized');
     if (this.poller) {
       clearInterval(this.poller);
-      this.poller = undefined;
+      this.homey.clearInterval(this.poller);
     }
+  }
+
+  async actionClimate(enable?: boolean, temperature?: number): Promise<void> {
+    if (enable === undefined) {
+      enable = await this.getCapabilityValue('ev_climate_active');
+    }
+    if (temperature === undefined) {
+      temperature = await this.getCapabilityValue('target_temperature');
+    }
+    const vin = this.getData().id;
+    await this.client?.actionClimate(vin, enable || false, temperature || 18);
+  }
+
+  async actionTargetSOC(target: string): Promise<void> {
+    const vin = this.getData().id;
+    const numTarget = parseInt(target, 10);
+    if (numTarget < 50 || numTarget > 100) {
+      throw new Error('Target SOC must be between 50 and 100');
+    }
+    await this.client?.actionTargetSOC(vin, numTarget);
+  }
+
+  async actionToggleCharging(enable: boolean): Promise<void> {
+    const vin = this.getData().id;
+    await this.client?.actionToggleCharging(vin, enable);
   }
 
   private pollVehicleState = async (executeEvents: boolean): Promise<void> => {
@@ -74,11 +129,11 @@ module.exports = class VehicleDevice extends Device {
     await this.setCapabilityValue('ev_charging_state', mapChargingState(vehicle.charging.chargingStatus));
 
     await this.setCapabilityValue('ev_charging_power', vehicle.charging.chargingPower);
-    await this.setCapabilityValue('ev_charging_time_remaining', vehicle.charging.remainingTime);
+    await this.setCapabilityValue('ev_charging_time_remaining', vehicle.charging.remainingTime || 0);
     await this.setCapabilityValue('ev_target_battery_level', vehicle.charging.target.toString());
 
     await this.setCapabilityValue('target_temperature', vehicle.climate.target);
-    await this.setCapabilityValue('ev_climate_active', vehicle.climate.climateState === 'on');
+    await this.setCapabilityValue('ev_climate_active', vehicle.climate.climateState !== 'off');
     await this.setCapabilityValue('ev_climate_time_remaining', vehicle.climate.remainingTime);
 
     await this.setCapabilityValue('ev_window_heating.front', vehicle.climate.windowHeatingState.front === 'on');
@@ -91,8 +146,7 @@ module.exports = class VehicleDevice extends Device {
 
     await this.setCapabilityValue('ev_next_inspection_days', vehicle.stats.nextInspection);
 
-
-    if(vehicle.batteryLevel >= vehicle.charging.target && !this.sentTargetReachedTrigger) {
+    if (vehicle.batteryLevel >= vehicle.charging.target && !this.sentTargetReachedTrigger) {
       this.sentTargetReachedTrigger = true;
       if (executeEvents) {
         this.homey.flow.getDeviceTriggerCard('soc_reached')
@@ -100,8 +154,8 @@ module.exports = class VehicleDevice extends Device {
           .catch(this.error);
       }
     }
-    if(this.chargeTimeRemaining !== vehicle.charging.remainingTime) {
-      this.chargeTimeRemaining = vehicle.charging.remainingTime;
+    if (this.chargeTimeRemaining !== vehicle.charging.remainingTime) {
+      this.chargeTimeRemaining = vehicle.charging.remainingTime || 0;
       if (executeEvents) {
         this.homey.flow.getDeviceTriggerCard('charging_countdown')
           .trigger(this, { timeRemaining: this.chargeTimeRemaining })
@@ -109,7 +163,7 @@ module.exports = class VehicleDevice extends Device {
       }
     }
 
-    if(this.lastSoC < vehicle.charging.target && this.sentTargetReachedTrigger) {
+    if (this.lastSoC < vehicle.charging.target && this.sentTargetReachedTrigger) {
       this.sentTargetReachedTrigger = false;
     }
   }

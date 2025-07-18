@@ -5,7 +5,7 @@
     "en": "Front window heating"
   },
   "getable": true,
-  "setable": true,
-  "uiComponent": "toggle",
+  "setable": false,
+  "uiComponent": "sensor",
   "icon": "/assets/ev_window_heating.svg"
 }
