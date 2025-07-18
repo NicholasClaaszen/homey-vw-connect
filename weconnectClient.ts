@@ -1,25 +1,21 @@
 import { EventEmitter } from 'events';
 import { WeConnectApi, Credentials, Vehicle } from './weconnectApi';
 
-class Log {
-  error(...args: any[]): void {
-    console.error(...args);
-  }
-
-  log(...args: any[]): void {
-    console.log(...args);
-  }
-}
-
 export class WeConnectClient {
-  private log = new Log();
   private api = new WeConnectApi();
-  private loggedIn = false;
-  private emitter = new EventEmitter();
+  private credentials?: Credentials;
+  private cachedVehicles: Vehicle[] = [];
 
-  async login(creds: Credentials): Promise<void> {
-    await this.api.login(creds);
-    this.loggedIn = true;
+  setCredentials(username: string, password: string): void {
+    this.credentials = { username, password };
+  }
+
+  async login(): Promise<void> {
+    try {
+      await this.api.login(this.credentials!);
+    } catch (error) {
+      throw new Error(`Login failed: check your credentials.`);
+    }
     await this.pollOnce();
   }
 
@@ -27,33 +23,29 @@ export class WeConnectClient {
     return this.cachedVehicles;
   }
 
-  private cachedVehicles: Vehicle[] = [];
-
-  setActiveVin(vin: string): void {
-    // not needed in new api
-  }
-
-  startPolling(intervalMs = 60000): void {
-    if (!this.loggedIn) {
-      this.log.error('Cannot start polling: not logged in');
-      return;
-    }
-    this.pollOnce().catch((err) => this.log.error('Polling error', err));
-    setInterval(() => {
-      this.pollOnce().catch((err) => this.log.error('Polling error', err));
-    }, intervalMs);
-  }
-
-  on(event: string, handler: (...args: any[]) => void): void {
-    this.emitter.on(event, handler);
-  }
-
   private async pollOnce(): Promise<void> {
-    const vehicles = await this.api.getVehicles();
-    this.cachedVehicles = vehicles;
-    const active = vehicles[0];
-    if (active && active.batteryLevel !== undefined) {
-      this.emitter.emit('currentSOC', active.batteryLevel);
+    const tokenCheck = await this.api.checkTokenValidity();
+    if (!tokenCheck) {
+      await this.login();
     }
+    this.cachedVehicles = await this.api.getVehicles();
+  }
+
+  public async getVehicle(vin: string): Promise<Vehicle | undefined> {
+    const tokenCheck = await this.api.checkTokenValidity();
+    if (!tokenCheck) {
+      await this.login();
+    }
+
+    const vehicle = await this.api.getVehicle(vin);
+    if (!vehicle) {
+      throw new Error(`Vehicle with VIN ${vin} not found.`);
+    }
+
+    this.cachedVehicles = this.cachedVehicles.map(v =>
+      v.vin === vin ? { ...v, batteryLevel: vehicle.batteryLevel } : v
+    );
+
+    return vehicle;
   }
 }

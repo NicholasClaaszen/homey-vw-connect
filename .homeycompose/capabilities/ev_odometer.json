@@ -1,0 +1,14 @@
+{
+  "id": "ev_odometer",
+  "type": "number",
+  "title": {
+    "en": "total kilometers driven"
+  },
+  "units": {
+    "en": "km"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/ev_odometer.svg"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "ev_climate_active",
+  "type": "boolean",
+  "title": {
+    "en": "Activate Climate Control"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "toggle",
+    "icon": "/assets/ev_climate_active.svg"
+}

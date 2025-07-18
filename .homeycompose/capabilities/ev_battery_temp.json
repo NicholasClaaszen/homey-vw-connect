@@ -1,0 +1,14 @@
+{
+  "id": "ev_battery_temp",
+  "type": "number",
+  "title": {
+    "en": "Battery Temperature"
+  },
+  "units": {
+    "en": "°C"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/batterytemperature.svg"
+}

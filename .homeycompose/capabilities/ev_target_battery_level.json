@@ -1,0 +1,56 @@
+{
+  "id": "ev_target_battery_level",
+  "type": "enum",
+  "min": 50,
+  "max": 100,
+  "step": 5,
+  "decimals": 0,
+  "title": {
+    "en": "Target state of charge"
+  },
+  "units": {
+    "en": "%"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "icon": "/assets/ev_target_battery_level.svg",
+  "values": [
+    {
+      "id": "100",
+      "title": {
+        "en": "100%"
+      }
+    },
+    {
+      "id": "90",
+      "title": {
+        "en": "90%"
+      }
+    },
+    {
+      "id": "80",
+      "title": {
+        "en": "80%"
+      }
+    },
+    {
+      "id": "70",
+      "title": {
+        "en": "70%"
+      }
+    },
+    {
+      "id": "60",
+      "title": {
+        "en": "60%"
+      }
+    },
+    {
+      "id": "50",
+      "title": {
+        "en": "50%"
+      }
+    }
+  ]
+}

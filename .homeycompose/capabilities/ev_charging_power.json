@@ -1,0 +1,14 @@
+{
+  "id": "ev_charging_power",
+  "type": "number",
+  "title": {
+    "en": "Charging power"
+  },
+  "units": {
+    "en": "kW"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/ev_charging_power.svg"
+}

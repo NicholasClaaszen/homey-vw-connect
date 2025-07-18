@@ -1,0 +1,14 @@
+{
+  "id": "ev_next_inspection_days",
+  "type": "number",
+  "title": {
+    "en": "days until inspection"
+  },
+  "units": {
+    "en": "days"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+    "icon": "/assets/ev_next_inspection_days.svg"
+}

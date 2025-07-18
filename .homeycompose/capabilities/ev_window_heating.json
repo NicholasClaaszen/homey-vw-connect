@@ -1,0 +1,11 @@
+{
+  "id": "ev_window_heating_front",
+  "type": "boolean",
+  "title": {
+    "en": "Front window heating"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "toggle",
+  "icon": "/assets/ev_window_heating.svg"
+}

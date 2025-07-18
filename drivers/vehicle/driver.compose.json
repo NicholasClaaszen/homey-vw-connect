@@ -3,48 +3,45 @@
   "name": {
     "en": "Volkswagen Vehicle"
   },
-  "class": "other",
+  "class": "car",
   "capabilities": [
-    "measure_battery"
+    "measure_battery",
+    "ev_target_battery_level",
+    "ev_charging_state",
+    "ev_charging_power",
+    "ev_charging_time_remaining",
+    "ev_odometer",
+    "ev_battery_temp.min",
+    "ev_battery_temp.max",
+    "ev_next_inspection_days",
+    "ev_climate_time_remaining",
+    "ev_window_heating.front",
+    "ev_window_heating.rear",
+    "ev_climate_active",
+    "target_temperature"
   ],
-  "images": {
-    "large": "/drivers/vehicle/assets/icon.svg",
-    "small": "/drivers/vehicle/assets/icon.svg"
-  },
-  "settings": [
-    {
-      "id": "target_soc",
-      "type": "number",
-      "label": { "en": "Target state of charge (%)" },
-      "value": 80
+  "capabilitiesOptions": {
+    "ev_battery_temp.min": {
+      "title": { "en": "Minimum battery temperature" }
+    },
+    "ev_battery_temp.max": {
+      "title": { "en": "Maximum battery temperature" }
     }
-  ],
-  "flow": {
-    "triggers": [
-      {
-        "id": "soc_changed",
-        "title": { "en": "State of charge changed" },
-        "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
-          { "name": "value", "type": "number", "title": { "en": "State of charge (%)" } }
-        ]
-      },
-      {
-        "id": "soc_reached",
-        "title": { "en": "State of charge reached" },
-        "args": [
-          { "name": "device", "type": "device", "filter": "driver_id=vehicle" },
-          { "name": "level", "type": "number", "title": { "en": "Target SoC (%)" } }
-        ]
-      }
-    ]
   },
+  "energy": {
+    "electricCar": true
+  },
+  "images": {
+    "large": "/assets/electric_car.svg",
+    "small": "/assets/electric_car.svg"
+  },
+  "settings": [],
   "pair": [
     {
       "id": "login_credentials",
       "template": "login_credentials",
       "options": {
-        "logo": "logo.png",
+        "logo": "icon.svg",
         "title": {
           "en": "Your custom title"
         },

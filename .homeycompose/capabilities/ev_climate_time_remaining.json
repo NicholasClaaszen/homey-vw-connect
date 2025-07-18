@@ -1,0 +1,14 @@
+{
+  "id": "ev_climate_time_remaining",
+  "type": "number",
+  "title": {
+    "en": "Climate preconditioning time remaining"
+  },
+  "units": {
+    "en": "min"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/ev_charging_time_remaining.svg"
+}

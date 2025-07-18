@@ -2,11 +2,10 @@
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.ihomer.vwweconnect",
   "version": "1.0.0",
-  "compatibility": ">=12.4.0",
+  "compatibility": ">=12.4.5",
   "sdk": 3,
   "platforms": [
-    "local",
-    "cloud"
+    "local"
   ],
   "name": {
     "en": "Volkswagen WeConnect"
@@ -15,17 +14,199 @@
     "en": "Adds support for reading vehicle data via Volkswagen's WeConnect network. Requires a WeConnect subscription."
   },
   "category": [
-    "appliances"
+    "energy"
   ],
   "permissions": [],
   "images": {
-    "small": "/assets/images/small.png",
-    "large": "/assets/images/large.png",
-    "xlarge": "/assets/images/xlarge.png"
+    "small": "/assets/vw_logo.svg",
+    "large": "/assets/vw_logo.svg",
+    "xlarge": "/assets/vw_logo.svg"
   },
   "author": {
     "name": "Nicholas Claaszen",
     "email": "nicholas@claaszen.nl"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "soc_reached",
+        "title": {
+          "en": "State of charge reached"
+        },
+        "titleFormat": "{device} reached {level}%",
+        "tokens": [
+          {
+            "name": "level",
+            "type": "number",
+            "title": {
+              "en": "Target SoC (%)"
+            },
+            "units": {
+              "en": "%"
+            },
+            "example": "80"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          }
+        ]
+      },
+      {
+        "id": "charging_countdown",
+        "title": {
+          "en": "Time until charged"
+        },
+        "titleFormat": "{device} will be charged in {timeRemaining}",
+        "tokens": [
+          {
+            "name": "timeRemaining",
+            "type": "number",
+            "title": {
+              "en": "Time until charged"
+            },
+            "units": {
+              "en": "min"
+            },
+            "example": "30"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "set_target_soc",
+        "title": {
+          "en": "Set target state of charge"
+        },
+        "titleFormat": "{device} set target SoC to {level}%",
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          },
+          {
+            "name": "level",
+            "type": "dropdown",
+            "title": {
+              "en": "Target SoC (%)"
+            },
+            "values": [
+              {
+                "id": "100",
+                "title": {
+                  "en": "100%"
+                }
+              },
+              {
+                "id": "90",
+                "title": {
+                  "en": "90%"
+                }
+              },
+              {
+                "id": "80",
+                "title": {
+                  "en": "80%"
+                }
+              },
+              {
+                "id": "70",
+                "title": {
+                  "en": "70%"
+                }
+              },
+              {
+                "id": "60",
+                "title": {
+                  "en": "60%"
+                }
+              },
+              {
+                "id": "50",
+                "title": {
+                  "en": "50%"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "activate_climate",
+        "title": {
+          "en": "Activate climate control"
+        },
+        "titleFormat": "{device} activate climate control",
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          }
+        ]
+      },
+      {
+        "id": "deactivate_climate",
+        "title": {
+          "en": "Deactivate climate control"
+        },
+        "titleFormat": "{device} deactivate climate control",
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          }
+        ]
+      },
+      {
+        "id": "activate_window_heating",
+        "title": {
+          "en": "Activate window heating"
+        },
+        "titleFormat": "{device} activate window heating for zone {zone}",
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          },
+          {
+            "name": "zone",
+            "type": "dropdown",
+            "title": {
+              "en": "Zone"
+            },
+            "values": [
+              {
+                "id": "front",
+                "title": {
+                  "en": "Front"
+                }
+              },
+              {
+                "id": "rear",
+                "title": {
+                  "en": "Rear"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   "drivers": [
     {
@@ -33,74 +214,49 @@
       "name": {
         "en": "Volkswagen Vehicle"
       },
-      "class": "other",
+      "class": "car",
       "capabilities": [
-        "measure_battery"
+        "measure_battery",
+        "ev_target_battery_level",
+        "ev_charging_state",
+        "ev_charging_power",
+        "ev_charging_time_remaining",
+        "ev_odometer",
+        "ev_battery_temp.min",
+        "ev_battery_temp.max",
+        "ev_next_inspection_days",
+        "ev_climate_time_remaining",
+        "ev_window_heating.front",
+        "ev_window_heating.rear",
+        "ev_climate_active",
+        "target_temperature"
       ],
-      "images": {
-        "large": "/drivers/vehicle/assets/icon.svg",
-        "small": "/drivers/vehicle/assets/icon.svg"
-      },
-      "settings": [
-        {
-          "id": "target_soc",
-          "type": "number",
-          "label": {
-            "en": "Target state of charge (%)"
-          },
-          "value": 80
-        }
-      ],
-      "flow": {
-        "triggers": [
-          {
-            "id": "soc_changed",
-            "title": {
-              "en": "State of charge changed"
-            },
-            "args": [
-              {
-                "name": "device",
-                "type": "device",
-                "filter": "driver_id=vehicle"
-              },
-              {
-                "name": "value",
-                "type": "number",
-                "title": {
-                  "en": "State of charge (%)"
-                }
-              }
-            ]
-          },
-          {
-            "id": "soc_reached",
-            "title": {
-              "en": "State of charge reached"
-            },
-            "args": [
-              {
-                "name": "device",
-                "type": "device",
-                "filter": "driver_id=vehicle"
-              },
-              {
-                "name": "level",
-                "type": "number",
-                "title": {
-                  "en": "Target SoC (%)"
-                }
-              }
-            ]
+      "capabilitiesOptions": {
+        "ev_battery_temp.min": {
+          "title": {
+            "en": "Minimum battery temperature"
           }
-        ]
+        },
+        "ev_battery_temp.max": {
+          "title": {
+            "en": "Maximum battery temperature"
+          }
+        }
       },
+      "energy": {
+        "electricCar": true
+      },
+      "images": {
+        "large": "/assets/electric_car.svg",
+        "small": "/assets/electric_car.svg"
+      },
+      "settings": [],
       "pair": [
         {
           "id": "login_credentials",
           "template": "login_credentials",
           "options": {
-            "logo": "logo.png",
+            "logo": "icon.svg",
             "title": {
               "en": "Your custom title"
             },
@@ -131,5 +287,169 @@
         }
       ]
     }
-  ]
+  ],
+  "capabilities": {
+    "ev_battery_temp": {
+      "id": "ev_battery_temp",
+      "type": "number",
+      "title": {
+        "en": "Battery Temperature"
+      },
+      "units": {
+        "en": "°C"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/batterytemperature.svg"
+    },
+    "ev_charging_power": {
+      "id": "ev_charging_power",
+      "type": "number",
+      "title": {
+        "en": "Charging power"
+      },
+      "units": {
+        "en": "kW"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/ev_charging_power.svg"
+    },
+    "ev_charging_time_remaining": {
+      "id": "ev_charging_time_remaining",
+      "type": "number",
+      "title": {
+        "en": "Time until charged"
+      },
+      "units": {
+        "en": "min"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/ev_charging_time_remaining.svg"
+    },
+    "ev_climate_active": {
+      "id": "ev_climate_active",
+      "type": "boolean",
+      "title": {
+        "en": "Activate Climate Control"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "icon": "/assets/ev_climate_active.svg"
+    },
+    "ev_climate_time_remaining": {
+      "id": "ev_climate_time_remaining",
+      "type": "number",
+      "title": {
+        "en": "Climate preconditioning time remaining"
+      },
+      "units": {
+        "en": "min"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/ev_charging_time_remaining.svg"
+    },
+    "ev_next_inspection_days": {
+      "id": "ev_next_inspection_days",
+      "type": "number",
+      "title": {
+        "en": "days until inspection"
+      },
+      "units": {
+        "en": "days"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/ev_next_inspection_days.svg"
+    },
+    "ev_odometer": {
+      "id": "ev_odometer",
+      "type": "number",
+      "title": {
+        "en": "total kilometers driven"
+      },
+      "units": {
+        "en": "km"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/ev_odometer.svg"
+    },
+    "ev_target_battery_level": {
+      "id": "ev_target_battery_level",
+      "type": "enum",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "decimals": 0,
+      "title": {
+        "en": "Target state of charge"
+      },
+      "units": {
+        "en": "%"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "icon": "/assets/ev_target_battery_level.svg",
+      "values": [
+        {
+          "id": "100",
+          "title": {
+            "en": "100%"
+          }
+        },
+        {
+          "id": "90",
+          "title": {
+            "en": "90%"
+          }
+        },
+        {
+          "id": "80",
+          "title": {
+            "en": "80%"
+          }
+        },
+        {
+          "id": "70",
+          "title": {
+            "en": "70%"
+          }
+        },
+        {
+          "id": "60",
+          "title": {
+            "en": "60%"
+          }
+        },
+        {
+          "id": "50",
+          "title": {
+            "en": "50%"
+          }
+        }
+      ]
+    },
+    "ev_window_heating": {
+      "id": "ev_window_heating_front",
+      "type": "boolean",
+      "title": {
+        "en": "Front window heating"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "icon": "/assets/ev_window_heating.svg"
+    }
+  }
 }
