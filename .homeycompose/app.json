@@ -18,9 +18,9 @@
   ],
   "permissions": [],
   "images": {
-    "small": "/assets/images/app_small.jpg",
-    "large": "/assets/images/app_large.jpg",
-    "xlarge": "/assets/images/app_xlarge.jpg"
+    "small": "/assets/images/app-small.jpg",
+    "large": "/assets/images/app-large.jpg",
+    "xlarge": "/assets/images/app-xlarge.jpg"
   },
   "author": {
     "name": "Nicholas Claaszen",
