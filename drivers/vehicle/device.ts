@@ -1,7 +1,6 @@
 'use strict';
 
 import { Device } from 'homey';
-import { EventEmitter } from 'events';
 import WeConnectClient from '../../weconnectClient';
 
 const mapChargingState = (state: string): string | null => {
@@ -22,6 +21,7 @@ const mapChargingState = (state: string): string | null => {
     case 'chargepurposereachedandconservation':
       return 'plugged_in_paused';
     case 'off':
+    case 'disconnected':
       return 'plugged_out';
     case 'error':
     case 'unsupported':
@@ -34,9 +34,7 @@ const mapChargingState = (state: string): string | null => {
 };
 
 module.exports = class VehicleDevice extends Device {
-  private soc = 0;
   private client: WeConnectClient | undefined;
-  private emitter = new EventEmitter();
   private poller : NodeJS.Timeout | undefined;
   private sentTargetReachedTrigger = true;
   private chargeTimeRemaining = 0;

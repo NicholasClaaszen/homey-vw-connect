@@ -195,6 +195,7 @@ export class WeConnectApi {
     });
     if (res.status !== 207) throw new Error('Failed to fetch vehicle');
     const v = res.data;
+
     const result = {
       vin,
       batteryLevel: v.measurements.fuelLevelStatus?.value?.currentSOC_pct || 0,
@@ -224,6 +225,10 @@ export class WeConnectApi {
         nextInspection: v.vehicleHealthInspection?.maintenanceStatus?.value?.inspectionDue_days || 999,
       },
     };
+
+    if(v.charging?.plugStatus?.value?.plugConnectionState === 'disconnected') {
+      result.charging.chargingStatus = 'disconnected';
+    }
 
     v.climatisation?.windowHeatingStatus?.value?.windowHeatingStatus?.forEach((w: { windowLocation: 'front' | 'rear'; windowHeatingState: string }) => {
       result.climate.windowHeatingState[w.windowLocation] = w.windowHeatingState;
