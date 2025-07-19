@@ -87,6 +87,68 @@
             "filter": "driver_id=vehicle"
           }
         ]
+      },
+      {
+        "id": "ev_charging_state_changed",
+        "title": {
+          "en": "Charging state changed"
+        },
+        "titleFormat": "{device} charging state changed to {state}",
+        "tokens": [
+          {
+            "name": "state",
+            "type": "string",
+            "title": {
+              "en": "Charging state"
+            },
+            "values": [
+              {
+                "id": "plugged_in_charging",
+                "title": {
+                  "en": "Charging"
+                }
+              },
+              {
+                "id": "plugged_in_discharging",
+                "title": {
+                  "en": "Discharging"
+                }
+              },
+              {
+                "id": "plugged_in_paused",
+                "title": {
+                  "en": "Paused"
+                }
+              },
+              {
+                "id": "plugged_in",
+                "title": {
+                  "en": "Plugged in"
+                }
+              },
+              {
+                "id": "plugged_out",
+                "title": {
+                  "en": "Unplugged"
+                }
+              },
+              {
+                "id": "error",
+                "title": {
+                  "en": "Error"
+                }
+              }
+            ],
+            "example": "charging"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=vehicle"
+          }
+        ]
       }
     ],
     "actions": [

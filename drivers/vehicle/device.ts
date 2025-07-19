@@ -10,14 +10,11 @@ const mapChargingState = (state: string): string | null => {
       return 'plugged_in_charging';
     case 'discharging':
       return 'plugged_in_discharging';
-    case 'readyforcharging':
-      return 'plugged_in_paused';
     case 'notreadyforcharging':
       return 'plugged_in';
+    case 'readyforcharging':
     case 'conservation':
-      return 'plugged_in_paused';
     case 'chargepurposereachedandnotconservationcharging':
-      return 'plugged_in_paused';
     case 'chargepurposereachedandconservation':
       return 'plugged_in_paused';
     case 'off':
@@ -39,6 +36,7 @@ module.exports = class VehicleDevice extends Device {
   private sentTargetReachedTrigger = true;
   private chargeTimeRemaining = 0;
   private lastSoC: number = 0;
+  private lastChargingState: string | null = null;
 
   async onInit(): Promise<void> {
     this.client = (this.homey.app as any).weconnect;
@@ -122,9 +120,10 @@ module.exports = class VehicleDevice extends Device {
   private pollVehicleState = async (executeEvents: boolean): Promise<void> => {
     const vin = this.getData().id;
     const vehicle: any = await this.client?.getVehicle(vin);
+    const mappedChargingState = mapChargingState(vehicle.charging.chargingStatus);
 
     await this.setCapabilityValue('measure_battery', vehicle.batteryLevel);
-    await this.setCapabilityValue('ev_charging_state', mapChargingState(vehicle.charging.chargingStatus));
+    await this.setCapabilityValue('ev_charging_state', mappedChargingState);
 
     await this.setCapabilityValue('ev_charging_power', vehicle.charging.chargingPower);
     await this.setCapabilityValue('ev_charging_time_remaining', vehicle.charging.remainingTime || 0);
@@ -160,9 +159,16 @@ module.exports = class VehicleDevice extends Device {
           .catch(this.error);
       }
     }
-
     if (this.lastSoC < vehicle.charging.target && this.sentTargetReachedTrigger) {
       this.sentTargetReachedTrigger = false;
+    }
+    if( this.lastChargingState !== mappedChargingState) {
+      this.lastChargingState = mappedChargingState;
+      if (executeEvents) {
+        this.homey.flow.getDeviceTriggerCard('charging_state_changed')
+          .trigger(this, { state: mappedChargingState })
+          .catch(this.error);
+      }
     }
   }
 };
